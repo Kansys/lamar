@@ -21,19 +21,15 @@ namespace Lamar
     {
         private readonly object _familyLock = new object();
         
-
-
         private readonly Dictionary<Type, ServiceFamily> _families = new Dictionary<Type, ServiceFamily>();
         private ImHashMap<Type, Func<Scope, object>> _byType = ImHashMap<Type, Func<Scope, object>>.Empty;
-
-
+        
         public static async Task<ServiceGraph> BuildAsync(IServiceCollection services, Scope rootScope)
         {
             var (registry, scanners) = await ScanningExploder.Explode(services);
 
             return new ServiceGraph(registry, rootScope, scanners);
         }
-        
         
         private ServiceGraph(IServiceCollection services, Scope rootScope, AssemblyScanner[] scanners)
         {
@@ -125,16 +121,16 @@ namespace Lamar
 
             
             rebuildReferencedAssemblyArray();
+
+            LamarCodeGeneration.Util.TypeExtensions.ClearCaches();
         }
-
-
+        
         private void rebuildReferencedAssemblyArray()
         {
             _allAssemblies = AllInstances().SelectMany(x => x.ReferencedAssemblies())
                 .Distinct().ToArray();
         }
-
-
+        
         private void buildOutMissingResolvers()
         {
             if (_inPlanning) return;

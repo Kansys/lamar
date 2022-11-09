@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
@@ -40,6 +41,12 @@ namespace LamarCodeGeneration.Util
 
         public static bool IsNullableOfT(this Type theType)
         {
+            return IsNullableOfTCache.GetOrAdd(theType, IsNullableOfTInternal);
+        }
+
+        private static readonly ConcurrentDictionary<Type, bool> IsNullableOfTCache = new ConcurrentDictionary<Type, bool>();
+        private static bool IsNullableOfTInternal(Type theType)
+        {
             if (theType == null) return false;
 
             return theType.GetTypeInfo().IsGenericType && theType.GetGenericTypeDefinition() == typeof(Nullable<>);
@@ -67,10 +74,17 @@ namespace LamarCodeGeneration.Util
 
         public static bool CanBeCastTo(this Type type, Type destinationType)
         {
-            if (type == null) return false;
-            if (type == destinationType) return true;
+            return CanBeCastToCache.GetOrAdd((type, destinationType), CanBeCastToInternal);
+        }
 
-            return destinationType.IsAssignableFrom(type);
+        private static readonly ConcurrentDictionary<(Type, Type), bool> CanBeCastToCache = new ConcurrentDictionary<(Type, Type), bool>();
+        private static bool CanBeCastToInternal((Type type, Type destinationType) types)
+        {
+            // use a tuple for compatibility with the Dictionary's type signature
+            if (types.type == null) return false;
+            if (types.type == types.destinationType) return true;
+
+            return types.destinationType.IsAssignableFrom(types.type);
         }
 
         public static bool IsInNamespace(this Type type, string nameSpace)
@@ -81,6 +95,12 @@ namespace LamarCodeGeneration.Util
         }
 
         public static bool IsOpenGeneric(this Type type)
+        {
+            return !(type is null) && OpenGenericCache.GetOrAdd(type, IsOpenGenericInternal);
+        }
+
+        private static readonly ConcurrentDictionary<Type, bool> OpenGenericCache = new ConcurrentDictionary<Type, bool>();
+        private static bool IsOpenGenericInternal(Type type)
         {
             if (type == null) return false;
             var typeInfo = type.GetTypeInfo();
@@ -164,6 +184,13 @@ namespace LamarCodeGeneration.Util
 
         public static bool Closes(this Type type, Type openType)
         {
+            return ClosesCache.GetOrAdd((type, openType), ClosesInternal);
+        }
+
+        private static readonly ConcurrentDictionary<(Type, Type), bool> ClosesCache = new ConcurrentDictionary<(Type, Type), bool>();
+        private static bool ClosesInternal((Type type, Type openType) types)
+        {
+            var (type, openType) = (types);
             if (type == null) return false;
 
             var typeInfo = type.GetTypeInfo();
@@ -183,14 +210,13 @@ namespace LamarCodeGeneration.Util
             var closes = baseTypeInfo.IsGenericType && baseType.GetGenericTypeDefinition() == openType;
             if (closes) return true;
 
-            return typeInfo.BaseType?.Closes(openType) ?? false;
+            return !(typeInfo.BaseType is null) && ClosesInternal((typeInfo.BaseType, openType));
         }
 
         public static Type GetInnerTypeFromNullable(this Type nullableType)
         {
             return nullableType.GetGenericArguments()[0];
         }
-
 
         public static string GetName(this Type type)
         {
@@ -217,8 +243,7 @@ namespace LamarCodeGeneration.Util
 
             return type.FullName;
         }
-
-
+        
         public static bool IsString(this Type type)
         {
             return type == typeof(string);
@@ -426,15 +451,32 @@ namespace LamarCodeGeneration.Util
 
         public static bool HasAttribute<T>(this Type type) where T : Attribute
         {
-            return type.GetTypeInfo().GetCustomAttributes<T>().Any();
+            var key = (type, typeof(T));
+            return HasAttributeCache.GetOrAdd(key, HasAttributeInternal);
+        }
+
+        private static readonly ConcurrentDictionary<(Type, Type), bool> HasAttributeCache = new ConcurrentDictionary<(Type, Type), bool>();
+        private static bool HasAttributeInternal((Type type, Type attribute) types)
+        {
+            var (type, attribute) = types;
+            return type.GetTypeInfo().GetCustomAttributes(attribute).Any();
         }
 
         public static T GetAttribute<T>(this Type type) where T : Attribute
         {
             return type.GetTypeInfo().GetCustomAttributes<T>().FirstOrDefault();
         }
-        
-        #if !NET4x
+
+        public static void ClearCaches()
+        {
+            ClosesCache.Clear();
+            CanBeCastToCache.Clear();
+            IsNullableOfTCache.Clear();
+            OpenGenericCache.Clear();
+            HasAttributeCache.Clear();
+        }
+
+#if !NET4x
         private static readonly Type[] _tupleTypes = new Type[]
         {
             typeof(ValueTuple<>),
