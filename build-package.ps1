@@ -15,6 +15,7 @@ $build_dir = $PSScriptRoot
 $build_artifacts_dir = "$build_dir\artifacts"
 $lamar_project_dir = "$build_dir\src\Lamar"
 $di_project_dir = "$build_dir\src\Lamar.Microsoft.DependencyInjection"
+$code_gen_project_dir = "$build_dir\src\LamarCodeGeneration"
 $scriptName = $MyInvocation.MyCommand.Name
 
 Write-Host "Creating BuildArtifacts directory" -ForegroundColor Green
@@ -34,4 +35,7 @@ Set-Location "$lamar_project_dir"
 Exec { dotnet pack --configuration release --output $build_artifacts_dir $suffix} 
 
 Set-Location "$di_project_dir"
+Exec { dotnet pack --configuration release --output $build_artifacts_dir $suffix} 
+
+Set-Location "$code_gen_project_dir"
 Exec { dotnet pack --configuration release --output $build_artifacts_dir $suffix} 
