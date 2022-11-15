@@ -1,0 +1,41 @@
+name: Publish Lamar IoC Nugets
+
+on:
+  workflow_dispatch:
+  push:
+    branches:    
+         - 'release'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - uses: actions/checkout@v2
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+    - name: Setup .NET 5
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 5.0.x
+    - name: Build and Test
+      run: ./build.ps1
+      shell: pwsh
+    - name: Build package
+      env:
+        BUILD_SUFFIX: Kansys
+      run: ./build-package.ps1
+      shell: pwsh
+    - name: Push to NuGet
+      env:
+        NUGET_URL: https://nuget.pkg.github.com/Kansys/index.json
+        NUGET_API_KEY: ${{ secrets.GITHUB_TOKEN }}
+      run: ./push.ps1
+      shell: pwsh
+    - name: Artifacts
+      uses: actions/upload-artifact@v2
+      with:
+        name: artifacts
+        path: artifacts/**/*
