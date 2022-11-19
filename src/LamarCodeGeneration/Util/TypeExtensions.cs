@@ -41,14 +41,20 @@ namespace LamarCodeGeneration.Util
 
         public static bool IsNullableOfT(this Type theType)
         {
-            return IsNullableOfTCache.GetOrAdd(theType, IsNullableOfTInternal);
+            if(theType is null) return false;
+
+            if (IsNullableOfTCache.TryGetValue(theType, out var value))
+                return value;
+
+            value = IsNullableOfTInternal(theType);
+            IsNullableOfTCache.TryAdd(theType, value);
+
+            return value;
         }
 
-        private static readonly ConcurrentDictionary<Type, bool> IsNullableOfTCache = new ConcurrentDictionary<Type, bool>();
+        private static readonly Dictionary<Type, bool> IsNullableOfTCache = new Dictionary<Type, bool>();
         private static bool IsNullableOfTInternal(Type theType)
         {
-            if (theType == null) return false;
-
             return theType.GetTypeInfo().IsGenericType && theType.GetGenericTypeDefinition() == typeof(Nullable<>);
         }
 
@@ -74,17 +80,23 @@ namespace LamarCodeGeneration.Util
 
         public static bool CanBeCastTo(this Type type, Type destinationType)
         {
-            return CanBeCastToCache.GetOrAdd((type, destinationType), CanBeCastToInternal);
+            if(type is null) return false;
+            if(type == destinationType) return true;
+            
+            var key = (type, destinationType);
+            if (CanBeCastToCache.TryGetValue(key, out var value))
+                return value;
+
+            value = CanBeCastToInternal(type, destinationType);
+            CanBeCastToCache.TryAdd(key, value);
+
+            return value;
         }
 
-        private static readonly ConcurrentDictionary<(Type, Type), bool> CanBeCastToCache = new ConcurrentDictionary<(Type, Type), bool>();
-        private static bool CanBeCastToInternal((Type type, Type destinationType) types)
+        private static readonly Dictionary<(Type, Type), bool> CanBeCastToCache = new Dictionary<(Type, Type), bool>();
+        private static bool CanBeCastToInternal(Type type, Type destinationType)
         {
-            // use a tuple for compatibility with the Dictionary's type signature
-            if (types.type == null) return false;
-            if (types.type == types.destinationType) return true;
-
-            return types.destinationType.IsAssignableFrom(types.type);
+            return destinationType.IsAssignableFrom(type);
         }
 
         public static bool IsInNamespace(this Type type, string nameSpace)
@@ -96,10 +108,18 @@ namespace LamarCodeGeneration.Util
 
         public static bool IsOpenGeneric(this Type type)
         {
-            return !(type is null) && OpenGenericCache.GetOrAdd(type, IsOpenGenericInternal);
+            if (type is null) return false;
+
+            if (OpenGenericCache.TryGetValue(type, out var value))
+                return value;
+
+            value = IsOpenGenericInternal(type);
+            OpenGenericCache.TryAdd(type, value);
+
+            return value;
         }
 
-        private static readonly ConcurrentDictionary<Type, bool> OpenGenericCache = new ConcurrentDictionary<Type, bool>();
+        private static readonly Dictionary<Type, bool> OpenGenericCache = new Dictionary<Type, bool>();
         private static bool IsOpenGenericInternal(Type type)
         {
             if (type == null) return false;
@@ -184,15 +204,21 @@ namespace LamarCodeGeneration.Util
 
         public static bool Closes(this Type type, Type openType)
         {
-            return ClosesCache.GetOrAdd((type, openType), ClosesInternal);
+            if(type == null) return false;
+
+            var types = (type, openType);
+            if (ClosesCache.TryGetValue(types, out var value))
+                return value;
+
+            value = ClosesInternal(type, openType);
+            ClosesCache.TryAdd(types, value);
+
+            return value;
         }
 
-        private static readonly ConcurrentDictionary<(Type, Type), bool> ClosesCache = new ConcurrentDictionary<(Type, Type), bool>();
-        private static bool ClosesInternal((Type type, Type openType) types)
+        private static readonly Dictionary<(Type, Type), bool> ClosesCache = new Dictionary<(Type, Type), bool>();
+        private static bool ClosesInternal(Type type, Type openType)
         {
-            var (type, openType) = (types);
-            if (type == null) return false;
-
             var typeInfo = type.GetTypeInfo();
 
             if (typeInfo.IsGenericType && type.GetGenericTypeDefinition() == openType) return true;
@@ -210,7 +236,7 @@ namespace LamarCodeGeneration.Util
             var closes = baseTypeInfo.IsGenericType && baseType.GetGenericTypeDefinition() == openType;
             if (closes) return true;
 
-            return !(typeInfo.BaseType is null) && ClosesInternal((typeInfo.BaseType, openType));
+            return !(typeInfo.BaseType is null) && ClosesInternal(typeInfo.BaseType, openType);
         }
 
         public static Type GetInnerTypeFromNullable(this Type nullableType)
@@ -257,6 +283,20 @@ namespace LamarCodeGeneration.Util
 
         public static bool IsSimple(this Type type)
         {
+            if (type is null) return false;
+
+            if (IsSimpleCache.TryGetValue(type, out var value))
+                return value;
+
+            value = IsSimpleInternal(type);
+            IsSimpleCache.TryAdd(type, value);
+
+            return value;
+        }
+
+        private static readonly Dictionary<Type, bool> IsSimpleCache = new Dictionary<Type, bool>();
+        private static bool IsSimpleInternal(Type type)
+        {
             var typeInfo = type.GetTypeInfo();
             return typeInfo.IsPrimitive || IsString(type) || typeInfo.IsEnum || type == typeof(Uri);
         }
@@ -265,6 +305,18 @@ namespace LamarCodeGeneration.Util
         {
             if (type == null) return false;
 
+            if (IsConcreteCache.TryGetValue(type, out var value))
+                return value;
+
+            value = IsConcreteInternal(type);
+            IsConcreteCache.TryAdd(type, value);
+
+            return value;
+        }
+
+        private static readonly Dictionary<Type, bool> IsConcreteCache = new Dictionary<Type, bool>();
+        private static bool IsConcreteInternal(Type type)
+        {
             var typeInfo = type.GetTypeInfo();
 
             return !typeInfo.IsAbstract && !typeInfo.IsInterface;
@@ -452,10 +504,16 @@ namespace LamarCodeGeneration.Util
         public static bool HasAttribute<T>(this Type type) where T : Attribute
         {
             var key = (type, typeof(T));
-            return HasAttributeCache.GetOrAdd(key, HasAttributeInternal);
+
+            if (HasAttributeCache.TryGetValue(key, out var value))
+                return value;
+
+            value = HasAttributeInternal(key);
+            HasAttributeCache.TryAdd(key, value);
+            return value;
         }
 
-        private static readonly ConcurrentDictionary<(Type, Type), bool> HasAttributeCache = new ConcurrentDictionary<(Type, Type), bool>();
+        private static readonly Dictionary<(Type, Type), bool> HasAttributeCache = new Dictionary<(Type, Type), bool>();
         private static bool HasAttributeInternal((Type type, Type attribute) types)
         {
             var (type, attribute) = types;
@@ -474,6 +532,8 @@ namespace LamarCodeGeneration.Util
             IsNullableOfTCache.Clear();
             OpenGenericCache.Clear();
             HasAttributeCache.Clear();
+            IsConcreteCache.Clear();
+            IsSimpleCache.Clear();
         }
 
 #if !NET4x
