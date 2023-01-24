@@ -1,14 +1,15 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <Description>Fast ASP.Net Core compatible IoC Tool, Successor to StructureMap</Description>
-    <Version>10.0.1</Version>
+    <VersionPrefix>10.0.1</VersionPrefix>
     <Authors>Jeremy D. Miller</Authors>
     <TargetFrameworks>net6.0;net7.0</TargetFrameworks>
     <DebugType>portable</DebugType>
     <AssemblyName>Lamar</AssemblyName>
     <PackageId>Lamar</PackageId>
     <PackageIconUrl>https://avatars2.githubusercontent.com/u/10048186?v=3&amp;s=200</PackageIconUrl>
-    <PackageProjectUrl>http://jasperfx.github.io/lamar</PackageProjectUrl>
+    <PackageProjectUrl>https://github.com/Kansys/lamar</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/Kansys/lamar</RepositoryUrl>
     <PackageLicenseUrl>https://github.com/JasperFX/lamar/blob/master/LICENSE</PackageLicenseUrl>
     <GenerateAssemblyProductAttribute>false</GenerateAssemblyProductAttribute>
     <GenerateAssemblyCopyrightAttribute>false</GenerateAssemblyCopyrightAttribute>
@@ -18,9 +19,9 @@
     <LangVersion>10.0</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="JasperFx.CodeGeneration" Version="1.0.1-Kansys" />
     <PackageReference Include="JasperFx.TypeDiscovery" Version="1.0.0" />
     <PackageReference Include="Microsoft.Bcl.AsyncInterfaces" Version="[6.0.0, 8.0.0)" />
-    <PackageReference Include="JasperFx.CodeGeneration" Version="1.0.0" />
     <PackageReference Include="JasperFx.Core" Version="1.1.0" />
   </ItemGroup>
   
