@@ -46,9 +46,6 @@ namespace Lamar.IoC.Frames
             {
                 writer.Write($"var {Variable.Usage} = new {arrayType}[]{{{elements}}};");
             }
-            
-            
-            Next?.GenerateCode(method, writer);
         }
 
         public override IEnumerable<Variable> FindVariables(IMethodVariables chain)

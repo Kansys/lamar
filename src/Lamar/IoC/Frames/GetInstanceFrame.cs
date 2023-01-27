@@ -34,7 +34,6 @@ namespace Lamar.IoC.Frames
         public override void GenerateCode(GeneratedMethod method, ISourceWriter writer)
         {
             writer.Write($"var {Variable.Usage} = {_scope.Usage}.{nameof(Scope.GetInstance)}<{Variable.VariableType.FullNameInCode()}>(\"{_name}\");");
-            Next?.GenerateCode(method, writer);
         }
 
         public override IEnumerable<Variable> FindVariables(IMethodVariables chain)

@@ -32,7 +32,6 @@ namespace Lamar.IoC.Frames
             writer.UsingBlock($"var {_scope.Usage} = {_factory.Usage}.{nameof(IServiceScopeFactory.CreateScope)}()", w =>
             {
                 w.Write($"var {Provider.Usage} = {_scope.Usage}.{nameof(IServiceScope.ServiceProvider)};");
-                Next?.GenerateCode(method, w);
             });
         }
 

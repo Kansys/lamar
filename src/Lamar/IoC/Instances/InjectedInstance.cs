@@ -50,7 +50,6 @@ namespace Lamar.IoC.Instances
             public override void GenerateCode(GeneratedMethod method, ISourceWriter writer)
             {
                 writer.Write($"var {Variable.Usage} = {_scope.Usage}.{nameof(Scope.GetInjected)}<{typeof(T).FullNameInCode()}>();");
-                Next?.GenerateCode(method, writer);
             }
 
             public override IEnumerable<Variable> FindVariables(IMethodVariables chain)

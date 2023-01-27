@@ -33,8 +33,6 @@ namespace Lamar.IoC.Instances
             {
                 writer.WriteLine($"{_scope.Usage}.{nameof(Scope.TryAddDisposable)}({Variable.Usage});");
             }
-
-            Next?.GenerateCode(method, writer);
         }
 
         public override IEnumerable<Variable> FindVariables(IMethodVariables chain)

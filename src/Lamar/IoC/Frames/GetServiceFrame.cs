@@ -22,7 +22,6 @@ namespace Lamar.IoC.Frames
         public override void GenerateCode(GeneratedMethod method, ISourceWriter writer)
         {
             writer.Write($"var {Variable.Usage} = ({Variable.VariableType.FullNameInCode()}){_provider.Usage}.{nameof(IServiceProvider.GetService)}(typeof({Variable.VariableType.FullNameInCode()}));");
-            Next?.GenerateCode(method, writer);
         }
     }
 }

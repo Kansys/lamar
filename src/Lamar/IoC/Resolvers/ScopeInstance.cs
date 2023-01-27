@@ -55,7 +55,6 @@ namespace Lamar.IoC.Resolvers
         public override void GenerateCode(GeneratedMethod method, ISourceWriter writer)
         {
             writer.Write($"var {Variable.Usage} = ({Variable.VariableType.FullNameInCode()}) {_scope.Usage}.{nameof(Scope.Root)};");
-            Next?.GenerateCode(method, writer);
         }
 
         public override IEnumerable<Variable> FindVariables(IMethodVariables chain)

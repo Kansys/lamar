@@ -26,7 +26,6 @@ namespace Lamar.IoC.Frames
         public override void GenerateCode(GeneratedMethod method, ISourceWriter writer)
         {
             writer.Write($"await using var {Nested.Usage} = ({typeof(IContainer).FullNameInCode()})_rootContainer.{nameof(IContainer.GetNestedContainer)}();");
-            Next?.GenerateCode(method, writer);
         }
     }
 
@@ -47,7 +46,6 @@ namespace Lamar.IoC.Frames
         public override void GenerateCode(GeneratedMethod method, ISourceWriter writer)
         {
             writer.Write($"var {Variable.Usage} = {_nested.Usage}.{nameof(IContainer.GetInstance)}<{Variable.VariableType.FullNameInCode()}>();");
-            Next?.GenerateCode(method, writer);
         }
     }
     
