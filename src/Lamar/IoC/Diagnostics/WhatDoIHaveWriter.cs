@@ -13,7 +13,8 @@ namespace Lamar.IoC.Diagnostics
     public enum WhatDoIHaveDisplay
     {
         Summary,
-        BuildPlan
+        BuildPlan,
+        BuildCost
     }
     
     public class WhatDoIHaveWriter
@@ -53,9 +54,13 @@ namespace Lamar.IoC.Diagnostics
             {
                 writeSummary(serviceTypes, writer);
             }
-            else
+            else if (display == WhatDoIHaveDisplay.BuildPlan)
             {
                 writeBuildPlan(serviceTypes, writer);
+            }
+            else
+            {
+                writeBuildCosts(serviceTypes,writer);
             }
         }
 
@@ -75,6 +80,30 @@ namespace Lamar.IoC.Diagnostics
                     writer.WriteLine();
                 }
             }
+        }
+
+        private static void writeBuildCosts(IEnumerable<IServiceFamilyConfiguration> serviceTypes, StringWriter writer)
+        {
+            var reportWriter = new TextReportWriter(2);
+
+            reportWriter.AddDivider('=');
+            reportWriter.AddText("Implementation Type", "Build Cost");
+
+            serviceTypes.Where(x => !x.ServiceType.IsOpenGeneric())
+                .SelectMany(x => x.Instances)
+                .DistinctBy(x => x.ImplementationType.FullName)
+                .Select(x =>
+                    new
+                    {
+                        ImplementationType = x.ImplementationType.FullNameInCode(),
+                        BuildCost = x.DescribeBuildPlan().Count(c => c == ';')
+                    })
+                .OrderByDescending(x => x.BuildCost)
+                .Take(100)
+                .Each(x => reportWriter.AddText(x.ImplementationType, x.BuildCost.ToString()));
+
+            reportWriter.AddDivider('=');
+            reportWriter.Write(writer);
         }
 
         private void writeSummary(IEnumerable<IServiceFamilyConfiguration> serviceTypes, StringWriter writer)

@@ -155,5 +155,17 @@ namespace Lamar
         /// <returns></returns>
         string HowDoIBuild(Type serviceType = null, Assembly assembly = null, string @namespace = null,
             string typeName = null);
+
+        /// <summary>
+        ///Returns a report with the 100 largest "build plans" for all matching types.
+        /// </summary>
+        /// <param name="serviceType"></param>
+        /// <param name="assembly"></param>
+        /// <param name="namespace"></param>
+        /// <param name="typeName"></param>
+        /// <returns></returns>
+        string WhereDidIStick(Type serviceType = null, Assembly assembly = null, string @namespace = null,
+            string typeName = null);
+
     }
 }

@@ -317,6 +317,21 @@ namespace Lamar.IoC
             }, display: WhatDoIHaveDisplay.BuildPlan);
         }
 
+        public string WhereDidIStick(Type serviceType = null, Assembly assembly = null, string @namespace = null,
+            string typeName = null)
+        {
+            assertNotDisposed();
+
+            var writer = new WhatDoIHaveWriter(Model);
+            return writer.GetText(new ModelQuery
+            {
+                Assembly = assembly,
+                Namespace = @namespace,
+                ServiceType = serviceType,
+                TypeName = typeName
+            }, display: WhatDoIHaveDisplay.BuildCost);
+        }
+
         /// <summary>
         /// Returns a textual report of all the assembly scanners used to build up this Container
         /// </summary>
